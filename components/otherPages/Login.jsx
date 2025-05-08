@@ -1,13 +1,52 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+
 export default function Login() {
   const [passwordType, setPasswordType] = useState("password");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
 
   const togglePassword = () => {
     setPasswordType((prevType) =>
       prevType === "password" ? "text" : "password"
     );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Prepare the payload with the field name 'username_or_email' to match backend
+    const formData = {
+      username_or_email: usernameOrEmail,
+      password,
+    };
+
+    try {
+      // Send POST request to the backend
+      const response = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        // Handle successful login
+        const data = await response.json();
+        console.log("Login successful", data);
+        // You can store the token in localStorage or handle redirection here
+      } else {
+        // Handle error from the backend
+        const errorData = await response.json();
+        setError(errorData.errors ? errorData.errors.username_or_email : "Something went wrong");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Login request failed", err);
+    }
   };
 
   return (
@@ -18,19 +57,17 @@ export default function Login() {
             <div className="heading">
               <h4>Login</h4>
             </div>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="form-login form-has-password"
-            >
+            <form onSubmit={handleSubmit} className="form-login form-has-password">
               <div className="wrap">
-                <fieldset className="">
+                <fieldset>
                   <input
                     className=""
-                    type="email"
+                    type="text"
                     placeholder="Username or email address*"
-                    name="email"
+                    name="username_or_email"
                     tabIndex={2}
-                    defaultValue=""
+                    value={usernameOrEmail}
+                    onChange={(e) => setUsernameOrEmail(e.target.value)}
                     aria-required="true"
                     required
                   />
@@ -42,7 +79,8 @@ export default function Login() {
                     placeholder="Password*"
                     name="password"
                     tabIndex={2}
-                    defaultValue=""
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     aria-required="true"
                     required
                   />
@@ -89,6 +127,7 @@ export default function Login() {
                 </button>
               </div>
             </form>
+            {error && <p className="error-message">{error}</p>}
           </div>
           <div className="right">
             <h4 className="mb_8">New Customer</h4>
