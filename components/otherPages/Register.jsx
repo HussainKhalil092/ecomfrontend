@@ -34,7 +34,7 @@ export default function Register() {
     e.preventDefault();
     setError(null);
     try {
-      const response = await axios.post("http://localhost:8000/api/signup", formData);
+      const response = await axios.post("https://ecom.reinsoft.site/api/signup", formData);
       console.log("Registration success:", response.data);
 
       // You can store token in localStorage or redirect
